@@ -36,6 +36,8 @@
 
 extern DMA_HandleTypeDef hdma_adc1;
 
+extern DMA_HandleTypeDef hdma_tim3_ch2;
+
 extern DMA_HandleTypeDef hdma_tim4_ch3;
 
 /* USER CODE BEGIN 0 */
@@ -142,6 +144,40 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
 
 }
 
+void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim_pwm)
+{
+
+  if(htim_pwm->Instance==TIM3)
+  {
+  /* USER CODE BEGIN TIM3_MspInit 0 */
+
+  /* USER CODE END TIM3_MspInit 0 */
+    /* Peripheral clock enable */
+    __TIM3_CLK_ENABLE();
+
+    /* Peripheral DMA init*/
+  
+    hdma_tim3_ch2.Instance = DMA1_Stream5;
+    hdma_tim3_ch2.Init.Channel = DMA_CHANNEL_5;
+    hdma_tim3_ch2.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_tim3_ch2.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_tim3_ch2.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_tim3_ch2.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+    hdma_tim3_ch2.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+    hdma_tim3_ch2.Init.Mode = DMA_CIRCULAR;
+    hdma_tim3_ch2.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_tim3_ch2.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    HAL_DMA_Init(&hdma_tim3_ch2);
+
+    __HAL_LINKDMA(htim_pwm,hdma[TIM_DMA_ID_CC2],hdma_tim3_ch2);
+
+  /* USER CODE BEGIN TIM3_MspInit 1 */
+
+  /* USER CODE END TIM3_MspInit 1 */
+  }
+
+}
+
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
 {
 
@@ -180,7 +216,26 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
 {
 
   GPIO_InitTypeDef GPIO_InitStruct;
-  if(htim->Instance==TIM4)
+  if(htim->Instance==TIM3)
+  {
+  /* USER CODE BEGIN TIM3_MspPostInit 0 */
+
+  /* USER CODE END TIM3_MspPostInit 0 */
+    /**TIM3 GPIO Configuration    
+    PA7     ------> TIM3_CH2 
+    */
+    GPIO_InitStruct.Pin = GPIO_PIN_7;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /* USER CODE BEGIN TIM3_MspPostInit 1 */
+
+  /* USER CODE END TIM3_MspPostInit 1 */
+  }
+  else if(htim->Instance==TIM4)
   {
   /* USER CODE BEGIN TIM4_MspPostInit 0 */
 
@@ -200,6 +255,26 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
 
   /* USER CODE END TIM4_MspPostInit 1 */
   }
+
+}
+
+void HAL_TIM_PWM_MspDeInit(TIM_HandleTypeDef* htim_pwm)
+{
+
+  if(htim_pwm->Instance==TIM3)
+  {
+  /* USER CODE BEGIN TIM3_MspDeInit 0 */
+
+  /* USER CODE END TIM3_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __TIM3_CLK_DISABLE();
+
+    /* Peripheral DMA DeInit*/
+    HAL_DMA_DeInit(htim_pwm->hdma[TIM_DMA_ID_CC2]);
+  }
+  /* USER CODE BEGIN TIM3_MspDeInit 1 */
+
+  /* USER CODE END TIM3_MspDeInit 1 */
 
 }
 
